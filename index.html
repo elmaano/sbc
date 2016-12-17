@@ -1,0 +1,127 @@
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <title>Squad Rating Brute Forcer</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+  </head>
+  <body ng-controller="MainCtrl">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>SBC Rating Brute Forcer</h1>
+        </div>
+        <form ng-submit="calculate()">
+          <div class="col-md-5">
+            <div class="card">
+              <div class="card-block">
+                <h4>Current Cards</h4>
+                <small>Enter the ratings of your current cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
+                <input type="text" class="form-control" ng-model="squadText" placeholder="81,82,85" required>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-7">
+            <div class="card">
+              <div class="card-block">
+                <h4>Targets</h4>
+                <div class="form-inline">
+                  <label>
+                    Target Squad Rating
+                    <input type="number" step="1" ng-init="target=83" ng-model="target" class="form-control">
+                  </label>
+                  <br>
+                  <p>Will try players rated from <input type="number" step="1" ng-model="bottom" class="form-control"> to <input type="number" step="1" ng-model="top" class="form-control"></p>
+                  <p class="text-danger"><strong>NOTE:</strong> Choosing a large range of player ratings may crash your tab or browser.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xs-12">
+            <p>Trying to find combinations of {{ 11-squad.length }} players to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
+            <br>
+            <button class="btn" type="submit">Calculate</button>
+            <br><hr>
+            <!-- Results table -->
+            <table class="table table-sm table-inverse">
+              <thead>
+                <tr>
+                  <th ng-repeat="rating in ratingRange">{{ rating }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="option in results">
+                  <td ng-repeat="rating in ratingRange">{{ option[rating] || '' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
+    <script src="node_modules/js-combinatorics/combinatorics.js"></script>
+    <script>
+      var app = angular.module('myApp', []);
+      app.controller('MainCtrl', function($scope){
+        $scope._ = _;
+
+        $scope.$watch('squadText', function(newVal, oldVal){
+          if(newVal){
+            $scope.squad = _.map(newVal.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
+              return parseInt(el) || 0;
+            });
+          }
+        });
+
+        $scope.$watch('target', function(newVal, oldVal){
+          if(oldVal && $scope.bottom && $scope.top){
+            $scope.bottom = newVal - (oldVal - $scope.bottom);
+            $scope.top = newVal + ($scope.top - oldVal);
+          }
+          else{
+            $scope.bottom = newVal - 1;
+            $scope.top = newVal + 1;
+          }
+        });
+
+        $scope.calculate = function(){
+          var possible = _.range($scope.bottom, $scope.top + 1);
+          $scope.ratingRange = possible;
+          var openPositions = 11 - $scope.squad.length;
+          // var n = _.map(possible, function(el){
+          //   return _.times(openPositions, _.constant(el));
+          // });
+          // n = _.flatten(n);
+
+          var combinations = [];
+          cmb = Combinatorics.baseN(possible, openPositions);
+          while(a = cmb.next()){
+            // a is open position set
+            if(Math.floor(rating(_.concat(a, $scope.squad))) >= $scope.target){
+              combinations.push(a.sort());
+            }
+          }
+
+          $scope.results = _.map(_.uniqBy(combinations, function(el){
+            return JSON.stringify(el);
+          }), function(el){
+            return _.countBy(el);
+          });
+        };
+      });
+
+      function rating(players) {
+        var avg = _.mean(players);
+        var adj = 0;
+        players.forEach(function(el){
+          adj += Math.max((el - Math.floor(avg)), 0);
+        });
+        return (adj / players.length) + avg;
+      }
+    </script>
+  </body>
+</html>

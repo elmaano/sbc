@@ -1,0 +1,15 @@
+{
+  "name": "squad-ratings",
+  "version": "1.0.0",
+  "description": "A brute-force squad combination finder for FIFA 17 Ultimate Team (FUT) Squad Building Challenges (SBC)",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "elmaano",
+  "repository": "https://github.com/elmaano/sbc",
+  "license": "MIT",
+  "dependencies": {
+    "js-combinatorics": "^0.5.2"
+  }
+}
