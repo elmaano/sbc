@@ -38,9 +38,10 @@
           </div>
 
           <div class="col-xs-12">
-            <p>Trying to find combinations of {{ 11-squad.length }} players to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
+            <p>Trying to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
             <br>
-            <button class="btn" type="submit">Calculate</button>
+            <button class="btn" type="submit" ng-hide="running">Calculate</button>
+            <span ng-show="running">Calculating...</span>
             <br><hr>
             <!-- Results table -->
             <table class="table table-sm table-inverse">
@@ -64,6 +65,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
     <script src="vendor/combinatorics.js"></script>
+    <script src="rating.js"></script>
     <script>
       var app = angular.module('myApp', []);
       app.controller('MainCtrl', function($scope){
@@ -92,36 +94,54 @@
           var possible = _.range($scope.bottom, $scope.top + 1);
           $scope.ratingRange = possible;
           var openPositions = 11 - $scope.squad.length;
-          // var n = _.map(possible, function(el){
-          //   return _.times(openPositions, _.constant(el));
-          // });
-          // n = _.flatten(n);
 
           var combinations = [];
-          cmb = Combinatorics.baseN(possible, openPositions);
-          while(a = cmb.next()){
-            // a is open position set
-            if(Math.floor(rating(_.concat(a, $scope.squad))) >= $scope.target){
-              combinations.push(a.sort());
-            }
-          }
 
-          $scope.results = _.map(_.uniqBy(combinations, function(el){
-            return JSON.stringify(el);
-          }), function(el){
-            return _.countBy(el);
-          });
+          if(window.Worker){
+            $scope.results = [];
+            var myWorker = new Worker("worker.js");
+            myWorker.onmessage = function(e){
+              switch (e.data.code) {
+                case 'SQUAD':
+                  $scope.results.push(_.countBy(e.data.squad));
+                  $scope.$apply();
+                  break;
+                case 'DONE':
+                  myWorker.terminate();
+                  $scope.running = false;
+                  $scope.$apply();
+                  break;
+                default:
+
+              };
+            };
+
+            var params = {
+              possible: possible,
+              openPositions: openPositions,
+              squad: $scope.squad,
+              target: $scope.target
+            };
+            myWorker.postMessage(params);
+            $scope.running = true;
+          }
+          else{
+            cmb = Combinatorics.baseN(possible, openPositions);
+            while(a = cmb.next()){
+              // a is open position set
+              if(Math.floor(rating(_.concat(a, $scope.squad))) == $scope.target){
+                combinations.push(a.sort());
+              }
+            }
+
+            $scope.results = _.map(_.uniqBy(combinations, function(el){
+              return JSON.stringify(el);
+            }), function(el){
+              return _.countBy(el);
+            });
+          }
         };
       });
-
-      function rating(players) {
-        var avg = _.mean(players);
-        var adj = 0;
-        players.forEach(function(el){
-          adj += Math.max((el - Math.floor(avg)), 0);
-        });
-        return (adj / players.length) + avg;
-      }
     </script>
 
     <script>
