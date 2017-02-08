@@ -1,8 +1,17 @@
-function rating(players) {
+var rating = function (players) {
+  var sum = _.sum(players);
   var avg = _.mean(players);
-  var adj = 0;
-  players.forEach(function(el){
-    adj += Math.max((el - Math.floor(avg)), 0);
-  });
-  return (adj / players.length) + avg;
+  var excess = _(players).reduce(function(res, val){
+    return res += Math.max((val - avg), 0);
+  }, 0);
+
+  return _(_(excess + sum).round() / 11).floor();
+}
+
+if (typeof exports !== 'undefined') {
+  _ = require('lodash');
+  if (typeof module !== 'undefined' && module.exports) {
+    exports = module.exports = rating;
+  }
+  exports.rating = rating;
 }
