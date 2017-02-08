@@ -4,12 +4,17 @@
   "description": "A brute-force squad combination finder for FIFA 17 Ultimate Team (FUT) Squad Building Challenges (SBC)",
   "main": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "elmaano",
   "repository": "https://github.com/elmaano/sbc",
   "license": "MIT",
   "dependencies": {
     "js-combinatorics": "^0.5.2"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.4",
+    "mocha": "^3.2.0",
+    "should": "^11.2.0"
   }
 }

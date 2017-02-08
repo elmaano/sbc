@@ -2,52 +2,64 @@
 <html ng-app="myApp">
   <head>
     <title>Squad Rating Brute Forcer</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" />
   </head>
   <body ng-controller="MainCtrl">
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <h1>SBC Rating Brute Forcer</h1>
+          <button style="float:right; margin-top: 1rem;" class="btn btn-xs btn-default" ng-click="showHelp = !showHelp">Help</button>
+          <h1>SBC Rating Brute Forcer ⚽️</h1>
+          <div class="alert alert-info" ng-if="showHelp">
+            <p><strong>How to use this tool</strong></p>
+            <p>Say you want to complete a squad-building challenge that requires an 84 squad rating, and you have an 85 Verratti and 80 Jesé that you'd like to use.</p>
+            <br>
+            <ol>
+              <li>Verratti and Jesé have ratings of 85 and 80, so you'd enter <code>85,80</code> in step #1 below.</li>
+              <li>You need to have an 84-rated squad, so your "Target Squad Rating" in step #2 is <code>84</code></li>
+              <li>The "Player ratings to try" fields are where you set the range for which to generate squad combinations. If you enter 83 to 85, for example, the calculator will calculate all possible combinations that give you an 84 squad rating with 83 to 85 rated players, in addition to your 85 and 80 rated players that you entered in step 1.</li>
+              <li>Once you press calculate, a table will appear underneath</li>
+              <li>The table contains the calculated combinations of players (9 in this example), that need to be bought/used in addition to your players from step #1 that will give you your target squad rating (84). Each column is a player rating (<code>83, 84, 85</code> in this case). Each row is a combination that will give you your target squad rating. For example, this example contains a row that has <code>6, ,3</code>. This means that you can use 6 83-rated players and 3 85-rated players (in addition to your current 85 and 80) to get a squad rating of 84.</li>
+            </ol>
+          </div>
         </div>
         <form ng-submit="calculate()">
-          <div class="col-md-5">
+          <div class="col-md-6 col-sm-12">
             <div class="card">
               <div class="card-block">
-                <h4>Current Cards</h4>
-                <small>Enter the ratings of your current cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
+                <h2>Step 1:</h2>
+                <small>Enter the ratings of the cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
                 <input type="text" class="form-control" ng-model="squadText" placeholder="81,82,85" required>
               </div>
             </div>
           </div>
-          <div class="col-md-7">
+          <div class="col-md-6 col-sm-12">
             <div class="card">
               <div class="card-block">
-                <h4>Targets</h4>
+                <h2>Step 2:</h2>
                 <div class="form-inline">
                   <label>
                     Target Squad Rating
                     <input type="number" step="1" ng-init="target=83" ng-model="target" class="form-control">
                   </label>
                   <br>
-                  <p>Will try players rated from <input type="number" step="1" ng-model="bottom" class="form-control"> to <input type="number" step="1" ng-model="top" class="form-control"></p>
-                  <p class="text-danger"><strong>NOTE:</strong> Choosing a large range of player ratings may crash your tab or browser.</p>
+                  <p>Player ratings to try <br><input type="number" step="1" ng-model="bottom" class="form-control"> to <br><input type="number" step="1" ng-model="top" class="form-control"></p>
+                  <p class="text-danger"><small>Note: Choosing a large range of player ratings will take a long time.</small></p>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="col-xs-12">
-            <p>Trying to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
-            <br>
-            <button class="btn" type="submit" ng-hide="running">Calculate</button>
+            <button class="btn btn-success" type="submit" ng-hide="running">Calculate</button>
             <span ng-show="running">Calculating...</span>
+            <p>Will try to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
             <br><hr>
             <!-- Results table -->
-            <table class="table table-sm table-inverse">
-              <thead>
+            <table class="table table-sm table-hover">
+              <thead style="border-bottom-style: solid; border-bottom-color: white;">
                 <tr>
-                  <th ng-repeat="rating in ratingRange">{{ rating }}</th>
+                  <th ng-repeat="rating in ratingRange"><span style="font-size: 1.5em;">{{ rating }}</span> <small style="font-weight:normal;">rated players</small></th>
                 </tr>
               </thead>
               <tbody>
@@ -58,6 +70,11 @@
             </table>
           </div>
         </form>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <p class="text-muted">Updated formula based on <a href="https://www.reddit.com/r/FIFA/comments/5osq7k/new_overall_rating_figured_out/">this</a> post by <a href="https://www.reddit.com/user/ChairmanMeowwww">ChairmanMeowwww</a> on reddit</p>
+        </div>
       </div>
     </div>
 
