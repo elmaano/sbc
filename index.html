@@ -49,22 +49,40 @@
               </div>
             </div>
           </div>
-
+          <div class="col-xs-12">
+            <div class="card">
+              <div class="card-block">
+                <h4 style=""><input type="checkbox" class="form-control" style="width:auto;display:inline-block; height: 1em;" name="" ng-model="setPrices"> Step 3: Set prices <small>(Optional)</small></h4>
+                <div class="form-inline" ng-if="setPrices">
+                  <label>
+                    Input prices for each player rating:
+                  </label>
+                  <br>
+                  <input type="number" class="form-control input-sm" ng-model="prices[rating]" placeholder="{{rating}}" ng-repeat="rating in range" required>
+                </div>
+                <br>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
           <div class="col-xs-12">
             <button class="btn btn-success" type="submit" ng-hide="running">Calculate</button>
             <span ng-show="running">Calculating...</span>
             <p>Will try to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
             <br><hr>
             <!-- Results table -->
-            <table class="table table-sm table-hover">
+            <table class="table table-sm table-hover" ng-if="results">
               <thead style="border-bottom-style: solid; border-bottom-color: white;">
                 <tr>
                   <th ng-repeat="rating in ratingRange"><span style="font-size: 1.5em;">{{ rating }}</span> <small style="font-weight:normal;">rated players</small></th>
+                  <th ng-if="setPrices">Price</th>
                 </tr>
               </thead>
               <tbody>
-                <tr ng-repeat="option in results">
+                <tr ng-repeat="option in results | orderBy:'price'">
                   <td ng-repeat="rating in ratingRange">{{ option[rating] || '' }}</td>
+                  <td ng-if="setPrices">{{ option.price || '' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -87,6 +105,8 @@
       var app = angular.module('myApp', []);
       app.controller('MainCtrl', function($scope){
         $scope._ = _;
+        $scope.prices = {};
+        $scope.range = [];
 
         $scope.$watch('squadText', function(newVal, oldVal){
           if(newVal){
@@ -107,6 +127,12 @@
           }
         });
 
+        $scope.$watchCollection('[bottom,top]', function(newVals, oldVals){
+          if(newVals){
+            $scope.range = _.range(newVals[0], newVals[1]+1);
+          }
+        });
+
         $scope.calculate = function(){
           var possible = _.range($scope.bottom, $scope.top + 1);
           $scope.ratingRange = possible;
@@ -120,7 +146,11 @@
             myWorker.onmessage = function(e){
               switch (e.data.code) {
                 case 'SQUAD':
-                  $scope.results.push(_.countBy(e.data.squad));
+                  var squad = _.countBy(e.data.squad);
+                  if($scope.setPrices){
+                    squad.price = getPrice($scope.prices, squad);
+                  }
+                  $scope.results.push(squad);
                   $scope.$apply();
                   break;
                 case 'DONE':
@@ -158,6 +188,12 @@
             });
           }
         };
+
+        function getPrice(prices, squad){
+          return _(squad).reduce(function(prev, next, index){
+            return prev + next * prices[index];
+          }, 0);
+        }
       });
     </script>
 
