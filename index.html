@@ -10,6 +10,10 @@
         <div class="col-md-12">
           <button style="float:right; margin-top: 1rem;" class="btn btn-xs btn-default" ng-click="showHelp = !showHelp">Help</button>
           <h1>SBC Rating Brute Forcer ⚽️</h1>
+           <p><button class="btn btn-xs btn-warning">New features</button></p>
+            <ul>
+              <li>You can now enter ratings more quickly by using the <code>x</code> operator, if you have  5 85s you can write <code>85x5</code> in step #1 below. It will have the same result has writing <code>85,85,85,85,85</code></li>
+            </ul>
           <div class="alert alert-info" ng-if="showHelp">
             <p><strong>How to use this tool</strong></p>
             <p>Say you want to complete a squad-building challenge that requires an 84 squad rating, and you have an 85 Verratti and 80 Jesé that you'd like to use.</p>
@@ -110,7 +114,12 @@
 
         $scope.$watch('squadText', function(newVal, oldVal){
           if(newVal){
-            $scope.squad = _.map(newVal.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
+            var multipliedValues = _.map(newVal.split(/[ ,]+/), function(el){
+              var elements = el.split(/x/);
+              return elements.length > 1 ? (elements[0]+",").repeat(parseInt(elements[1])): el;
+            });
+            multipliedValues = multipliedValues.join()
+            $scope.squad = _.map(multipliedValues.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
               return parseInt(el) || 0;
             });
           }
@@ -134,7 +143,9 @@
         });
 
         $scope.calculate = function(){
+          console.log("called")
           var possible = _.range($scope.bottom, $scope.top + 1);
+
           $scope.ratingRange = possible;
           var openPositions = 11 - $scope.squad.length;
 
@@ -146,6 +157,7 @@
             myWorker.onmessage = function(e){
               switch (e.data.code) {
                 case 'SQUAD':
+
                   var squad = _.countBy(e.data.squad);
                   if($scope.setPrices){
                     squad.price = getPrice($scope.prices, squad);
