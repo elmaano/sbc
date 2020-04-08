@@ -1,192 +1,223 @@
 <!doctype html>
 <html ng-app="myApp">
-  <head>
-    <title>Squad Rating Brute Forcer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" />
-  </head>
-  <body ng-controller="MainCtrl">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12">
-          <button style="float:right; margin-top: 1rem;" class="btn btn-xs btn-default" ng-click="showHelp = !showHelp">Help</button>
-          <h1>SBC Rating Brute Forcer ⚽️</h1>
-           <p><button class="btn btn-xs btn-warning">New features</button></p>
-            <ul>
-              <li>You can now enter ratings more quickly by using the <code>x</code> operator, if you have  5 85s you can write <code>85x5</code> in step #1 below. It will have the same result has writing <code>85,85,85,85,85</code></li>
-            </ul>
-          <div class="alert alert-info" ng-if="showHelp">
-            <p><strong>How to use this tool</strong></p>
-            <p>Say you want to complete a squad-building challenge that requires an 84 squad rating, and you have an 85 Verratti and 80 Jesé that you'd like to use.</p>
-            <br>
-            <ol>
-              <li>Verratti and Jesé have ratings of 85 and 80, so you'd enter <code>85,80</code> in step #1 below.</li>
-              <li>You need to have an 84-rated squad, so your "Target Squad Rating" in step #2 is <code>84</code></li>
-              <li>The "Player ratings to try" fields are where you set the range for which to generate squad combinations. If you enter 83 to 85, for example, the calculator will calculate all possible combinations that give you an 84 squad rating with 83 to 85 rated players, in addition to your 85 and 80 rated players that you entered in step 1.</li>
-              <li>Once you press calculate, a table will appear underneath</li>
-              <li>The table contains the calculated combinations of players (9 in this example), that need to be bought/used in addition to your players from step #1 that will give you your target squad rating (84). Each column is a player rating (<code>83, 84, 85</code> in this case). Each row is a combination that will give you your target squad rating. For example, this example contains a row that has <code>6, ,3</code>. This means that you can use 6 83-rated players and 3 85-rated players (in addition to your current 85 and 80) to get a squad rating of 84.</li>
-            </ol>
+<head>
+  <title>Squad Rating Brute Forcer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" />
+</head>
+<body ng-controller="MainCtrl">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <button style="float:right; margin-top: 1rem;" class="btn btn-xs btn-default" ng-click="showHelp = !showHelp">Help</button>
+        <h1>SBC Rating Brute Forcer ⚽️</h1>
+        <p><button class="btn btn-xs btn-warning">New features</button></p>
+        <ul>
+          <li>You can now enter ratings more quickly by using the <code>x</code> operator, if you have  5 85s you can write <code>85x5</code> in step #1 below. It will have the same result has writing <code>85,85,85,85,85</code></li>
+          <li>You can fill in the players prices automatically by fetching the data directly from <a href="https://www.futbin.com/stc/cheapest">Futbin.com</a></li>
+        </ul>
+        <div class="alert alert-info" ng-if="showHelp">
+          <p><strong>How to use this tool</strong></p>
+          <p>Say you want to complete a squad-building challenge that requires an 84 squad rating, and you have an 85 Verratti and 80 Jesé that you'd like to use.</p>
+          <br>
+          <ol>
+            <li>Verratti and Jesé have ratings of 85 and 80, so you'd enter <code>85,80</code> in step #1 below.</li>
+            <li>You need to have an 84-rated squad, so your "Target Squad Rating" in step #2 is <code>84</code></li>
+            <li>The "Player ratings to try" fields are where you set the range for which to generate squad combinations. If you enter 83 to 85, for example, the calculator will calculate all possible combinations that give you an 84 squad rating with 83 to 85 rated players, in addition to your 85 and 80 rated players that you entered in step 1.</li>
+            <li>Once you press calculate, a table will appear underneath</li>
+            <li>The table contains the calculated combinations of players (9 in this example), that need to be bought/used in addition to your players from step #1 that will give you your target squad rating (84). Each column is a player rating (<code>83, 84, 85</code> in this case). Each row is a combination that will give you your target squad rating. For example, this example contains a row that has <code>6, ,3</code>. This means that you can use 6 83-rated players and 3 85-rated players (in addition to your current 85 and 80) to get a squad rating of 84.</li>
+          </ol>
+        </div>
+      </div>
+      <form ng-submit="calculate()">
+        <div class="col-md-6 col-sm-12">
+          <div class="card">
+            <div class="card-block">
+              <h2>Step 1:</h2>
+              <small>Enter the ratings of the cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
+              <input type="text" class="form-control" ng-model="squadText" placeholder="81,82,85" required>
+            </div>
           </div>
         </div>
-        <form ng-submit="calculate()">
-          <div class="col-md-6 col-sm-12">
-            <div class="card">
-              <div class="card-block">
-                <h2>Step 1:</h2>
-                <small>Enter the ratings of the cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
-                <input type="text" class="form-control" ng-model="squadText" placeholder="81,82,85" required>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 col-sm-12">
-            <div class="card">
-              <div class="card-block">
-                <h2>Step 2:</h2>
-                <div class="form-inline">
-                  <label>
-                    Target Squad Rating
-                    <input type="number" step="1" ng-init="target=83" ng-model="target" class="form-control">
-                  </label>
-                  <br>
-                  <p>Player ratings to try <br><input type="number" step="1" ng-model="bottom" class="form-control"> to <br><input type="number" step="1" ng-model="top" class="form-control"></p>
-                  <p class="text-danger"><small>Note: Choosing a large range of player ratings will take a long time.</small></p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-xs-12">
-            <div class="card">
-              <div class="card-block">
-                <h4 style=""><input type="checkbox" class="form-control" style="width:auto;display:inline-block; height: 1em;" name="" ng-model="setPrices"> Step 3: Set prices <small>(Optional)</small></h4>
-                <div class="form-inline" ng-if="setPrices">
-                  <label>
-                    Input prices for each player rating:
-                  </label>
-                  <br>
-                  <input type="number" class="form-control input-sm" ng-model="prices[rating]" placeholder="{{rating}}" ng-repeat="rating in range" required>
-                </div>
+        <div class="col-md-6 col-sm-12">
+          <div class="card">
+            <div class="card-block">
+              <h2>Step 2:</h2>
+              <div class="form-inline">
+                <label>
+                  Target Squad Rating
+                  <input type="number" step="1" ng-init="target=83" ng-model="target" class="form-control">
+                </label>
                 <br>
+                <p>Player ratings to try <br><input type="number" step="1" ng-model="bottom" class="form-control"> to <br><input type="number" step="1" ng-model="top" class="form-control"></p>
+                <p class="text-danger"><small>Note: Choosing a large range of player ratings will take a long time.</small></p>
               </div>
             </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-xs-12">
-            <button class="btn btn-success" type="submit" ng-hide="running">Calculate</button>
-            <span ng-show="running">Calculating...</span>
-            <p>Will try to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
-            <br><hr>
-            <!-- Results table -->
-            <table class="table table-sm table-hover" ng-if="results">
-              <thead style="border-bottom-style: solid; border-bottom-color: white;">
-                <tr>
-                  <th ng-repeat="rating in ratingRange"><span style="font-size: 1.5em;">{{ rating }}</span> <small style="font-weight:normal;">rated players</small></th>
-                  <th ng-if="setPrices">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="option in results | orderBy:'price'">
-                  <td ng-repeat="rating in ratingRange">{{ option[rating] || '' }}</td>
-                  <td ng-if="setPrices">{{ option.price || '' }}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="col-xs-12">
+          <div class="card">
+            <div class="card-block">
+
+              <h4 style=""><input type="checkbox" class="form-control" style="width:auto;display:inline-block; height: 1em;" name="" ng-model="setPrices"> Step 3: Set prices <small>(Optional)</small> <button class="btn btn-xs btn-warning">New</button></p></h4><p>
+              <div class="form-inline" ng-if="setPrices">
+                <button class="btn btn-success" ng-click="getPrices()" type="button" ng-disabled="isGettingPrices">{{ getPricesText }}</button>
+                <p><small>Note: The data is taken from <a href="https://www.futbin.com/stc/cheapest">Futbin.com</a></small></p>
+                <br>
+                <label>
+                  Input prices for each player rating:
+                </label>
+                <br>
+                <input type="number" class="form-control input-sm" ng-model="prices[rating]" placeholder="{{rating}}" ng-repeat="rating in range" required>
+              </div>
+              <br>
+            </div>
           </div>
-        </form>
+        </div>
       </div>
       <div class="row">
-        <div class="col-md-12">
-          <p class="text-muted">Updated formula based on <a href="https://www.reddit.com/r/FIFA/comments/5osq7k/new_overall_rating_figured_out/">this</a> post by <a href="https://www.reddit.com/user/ChairmanMeowwww">ChairmanMeowwww</a> on reddit</p>
+        <div class="col-xs-12">
+          <button class="btn btn-success" type="submit" ng-hide="running">Calculate</button>
+          <span ng-show="running">Calculating...</span>
+          <p>Will try to find combinations of {{ 11-squad.length }} players rated between {{ bottom }}-{{ top }} to join your {{ squad }} rated players to achieve a rating of {{ target }}.</p>
+          <br><hr>
+          <!-- Results table -->
+          <table class="table table-sm table-hover" ng-if="results">
+            <thead style="border-bottom-style: solid; border-bottom-color: white;">
+              <tr>
+                <th ng-repeat="rating in ratingRange"><span style="font-size: 1.5em;">{{ rating }}</span> <small style="font-weight:normal;">rated players</small></th>
+                <th ng-if="setPrices">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="option in results | orderBy:'price'">
+                <td ng-repeat="rating in ratingRange">{{ option[rating] || '' }}</td>
+                <td ng-if="setPrices">{{ option.price || '' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+      </form>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-muted">Updated formula based on <a href="https://www.reddit.com/r/FIFA/comments/5osq7k/new_overall_rating_figured_out/">this</a> post by <a href="https://www.reddit.com/user/ChairmanMeowwww">ChairmanMeowwww</a> on reddit</p>
       </div>
     </div>
+  </div>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
-    <script src="vendor/combinatorics.js"></script>
-    <script src="rating.js"></script>
-    <script>
-      var app = angular.module('myApp', []);
-      app.controller('MainCtrl', function($scope){
-        $scope._ = _;
-        $scope.prices = {};
-        $scope.range = [];
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
+  <script src="vendor/combinatorics.js"></script>
+  <script src="rating.js"></script>
+  <script>
+    var app = angular.module('myApp', []);
+    app.controller('MainCtrl', function($scope){
+      $scope._ = _;
+      $scope.prices = {};
+      $scope.range = [];
+      $scope.getPricesText = "Get prices";
 
-        $scope.$watch('squadText', function(newVal, oldVal){
-          if(newVal){
-            var multipliedValues = _.map(newVal.split(/[ ,]+/), function(el){
-              var elements = el.split(/x/);
-              return elements.length > 1 ? (elements[0]+",").repeat(parseInt(elements[1])): el;
-            });
-            multipliedValues = multipliedValues.join()
-            $scope.squad = _.map(multipliedValues.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
-              return parseInt(el) || 0;
-            });
-          }
+      $scope.$watch('squadText', function(newVal, oldVal){
+        if(newVal){
+          var multipliedValues = _.map(newVal.split(/[ ,]+/), function(el){
+            var elements = el.split(/x/);
+            return elements.length > 1 ? (elements[0]+",").repeat(parseInt(elements[1])): el;
+          });
+          multipliedValues = multipliedValues.join()
+          $scope.squad = _.map(multipliedValues.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
+            return parseInt(el) || 0;
+          });
+        }
+      });
+
+      $scope.$watch('target', function(newVal, oldVal){
+        if(oldVal && $scope.bottom && $scope.top){
+          $scope.bottom = newVal - (oldVal - $scope.bottom);
+          $scope.top = newVal + ($scope.top - oldVal);
+        }
+        else{
+          $scope.bottom = newVal - 1;
+          $scope.top = newVal + 1;
+        }
+      });
+
+      $scope.$watchCollection('[bottom,top]', function(newVals, oldVals){
+        if(newVals){
+          $scope.range = _.range(newVals[0], newVals[1]+1);
+        }
+      });
+
+      $scope.getPrices = function(){
+        $scope.isGettingPrices = true;
+        $scope.getPricesText = "Loading...";
+
+        fetch('https://cors-anywhere.herokuapp.com/https://www.futbin.com/stc/cheapest')
+        .then((response) => {
+          return response.text().then(function(text) {
+            parser = new DOMParser();
+            doc = parser.parseFromString(text, "text/html");          
+            var container = doc.querySelectorAll(".top-stc-players-box");
+            var prices = {};
+
+            for (var i = 0; i < container.length; i++) {
+              var rating = container[i].querySelector("span span").innerText;
+              var minPrice = container[i].querySelector(".price-holder-row span").innerText;
+              var multiplier = minPrice.includes('K') ? 1000 : minPrice.includes('M') ? 1000000 : 1;
+              prices[parseInt(rating)] = parseFloat(minPrice.replace('K', '').replace('M', '')) * multiplier;
+            }
+            $scope.prices = prices;
+            $scope.isGettingPrices = false;
+            $scope.getPricesText = "Get prices";
+            $scope.$apply();
+          })
         });
+      }
 
-        $scope.$watch('target', function(newVal, oldVal){
-          if(oldVal && $scope.bottom && $scope.top){
-            $scope.bottom = newVal - (oldVal - $scope.bottom);
-            $scope.top = newVal + ($scope.top - oldVal);
-          }
-          else{
-            $scope.bottom = newVal - 1;
-            $scope.top = newVal + 1;
-          }
-        });
+      $scope.calculate = function(){
+        var possible = _.range($scope.bottom, $scope.top + 1);
 
-        $scope.$watchCollection('[bottom,top]', function(newVals, oldVals){
-          if(newVals){
-            $scope.range = _.range(newVals[0], newVals[1]+1);
-          }
-        });
+        $scope.ratingRange = possible;
+        var openPositions = 11 - $scope.squad.length;
 
-        $scope.calculate = function(){
-          console.log("called")
-          var possible = _.range($scope.bottom, $scope.top + 1);
+        var combinations = [];
 
-          $scope.ratingRange = possible;
-          var openPositions = 11 - $scope.squad.length;
+        if(window.Worker){
+          $scope.results = [];
+          var myWorker = new Worker("worker.js");
+          myWorker.onmessage = function(e){
+            switch (e.data.code) {
+              case 'SQUAD':
 
-          var combinations = [];
+              var squad = _.countBy(e.data.squad);
+              if($scope.setPrices){
+                squad.price = getPrice($scope.prices, squad);
+              }
+              $scope.results.push(squad);
+              $scope.$apply();
+              break;
+              case 'DONE':
+              myWorker.terminate();
+              $scope.running = false;
+              $scope.$apply();
+              break;
+              default:
 
-          if(window.Worker){
-            $scope.results = [];
-            var myWorker = new Worker("worker.js");
-            myWorker.onmessage = function(e){
-              switch (e.data.code) {
-                case 'SQUAD':
-
-                  var squad = _.countBy(e.data.squad);
-                  if($scope.setPrices){
-                    squad.price = getPrice($scope.prices, squad);
-                  }
-                  $scope.results.push(squad);
-                  $scope.$apply();
-                  break;
-                case 'DONE':
-                  myWorker.terminate();
-                  $scope.running = false;
-                  $scope.$apply();
-                  break;
-                default:
-
-              };
             };
+          };
 
-            var params = {
-              possible: possible,
-              openPositions: openPositions,
-              squad: $scope.squad,
-              target: $scope.target
-            };
-            myWorker.postMessage(params);
-            $scope.running = true;
-          }
-          else{
-            cmb = Combinatorics.baseN(possible, openPositions);
-            while(a = cmb.next()){
+          var params = {
+            possible: possible,
+            openPositions: openPositions,
+            squad: $scope.squad,
+            target: $scope.target
+          };
+          myWorker.postMessage(params);
+          $scope.running = true;
+        }
+        else{
+          cmb = Combinatorics.baseN(possible, openPositions);
+          while(a = cmb.next()){
               // a is open position set
               if(Math.floor(rating(_.concat(a, $scope.squad))) == $scope.target){
                 combinations.push(a.sort());
@@ -211,8 +242,8 @@
 
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
       ga('create', 'UA-89115163-1', 'auto');
@@ -220,4 +251,4 @@
 
     </script>
   </body>
-</html>
+  </html>
