@@ -24,7 +24,7 @@
 			<div class="col-md-12">
 				<button class="btn btn-info mb-2" type="button" ng-disabled="isGettingPrices" ng-click="getPrices()">{{ getPricesText }}</button>
 				<p><small class="form-text text-muted">Note: The data is taken from <a href="https://www.futbin.com/stc/cheapest">Futbin.com</a></small></p>
-				<p>You have <span class="text-info">{{ playersCount() }}</span> players to use as fodder and they are worth <span class="text-info">{{ totalPrices() }}</span> coins.</p>
+				<p>You have <span class="text-info">{{ playersCount() }}</span> players to use as fodder and they are worth <span class="text-info">{{ totalPrices() | number:'' }}</span> coins.</p>
 				<hr>
 			</div>
 		</div>
@@ -39,7 +39,7 @@
 				<input type="number" class="form-control input-sm" ng-model="prices[key]" placeholder="{{key}} price" >
 			</div>
 			<div class="col-md-3">
-				<p class="mb-0 align-middle">{{ prices[key] * quantity[key] || 0 }} coins</p>
+				<p class="mb-0 align-middle">{{ (prices[key] * quantity[key] || 0) | number:'' }} coins</p>
 			</div>
 		</div>
 	</div>
