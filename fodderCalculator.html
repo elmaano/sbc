@@ -1,0 +1,111 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+	<title>Fodder calculator</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body ng-controller="MainCtrl">
+	<div class="container mt-2">
+		<div class="row">
+			<div class="col-md-12">
+				<button style="float:right; margin-top: 1rem;" class="btn btn-sm btn-secondary" ng-click="showHelp = !showHelp">Help</button>
+				<h1>Fodder Calculator ⚽️</h1>
+				<hr>
+				<div class="alert alert-info" ng-if="showHelp">
+					<p><strong>How to use this tool</strong></p>
+					<p>This tool is quite straightforward to use, it simply calculates the values in coins of the "fodder" you have in your club. 
+					Fodder players are usally high rated players that are only good mostly for rising the rating in SBC.</p>
+					<p>The purpouse of this tool is to calculate of much you fodder is worth and have a rough estimate of how much you can save in a SBC.</p>
+					<p>You can either fill the table manually or fill the prices by clicking the Get Prices button, the data will be taken from <a href="https://www.futbin.com/stc/cheapest">Futbin.com</a> and each cost is for the chepeast player of that rating.</p>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<button class="btn btn-info mb-2" type="button" ng-disabled="isGettingPrices" ng-click="getPrices()">{{ getPricesText }}</button>
+				<p><small class="form-text text-muted">Note: The data is taken from <a href="https://www.futbin.com/stc/cheapest">Futbin.com</a></small></p>
+				<p>You have <span class="text-info">{{ playersCount() }}</span> players to use as fodder and they are worth <span class="text-info">{{ totalPrices() }}</span> coins.</p>
+				<hr>
+			</div>
+		</div>
+		<div class="row mb-2 align-items-center" ng-repeat="(key, value) in prices " >
+			<div class="col-md-1">
+				<h5 class="mb-0">{{ key }}</h5>
+			</div>
+			<div class="col-md-3">
+				<input type="number" class="form-control input-sm" ng-model="quantity[key]" placeholder="{{key}} quantity" >
+			</div>
+			<div class="col-md-3">
+				<input type="number" class="form-control input-sm" ng-model="prices[key]" placeholder="{{key}} price" >
+			</div>
+			<div class="col-md-3">
+				<p class="mb-0 align-middle">{{ prices[key] * quantity[key] || 0 }} coins</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.15.0/lodash.min.js"></script>
+<script src="vendor/combinatorics.js"></script>
+<script src="rating.js"></script>
+<script>
+	var app = angular.module('myApp', []);
+	app.controller('MainCtrl', function($scope){
+		$scope._ = _;
+
+		$scope.prices = {};
+		$scope.quantity = {};
+		for (var i = 81; i < 99; i++) {
+			$scope.prices[''+i] = null;
+		}
+		$scope.getPricesText = "Get prices";
+
+		$scope.$watch('squadText', function(newVal, oldVal){
+			
+		});
+
+		$scope.totalPrices = function() {
+			var total = 0;
+			var keys = Object.keys($scope.prices);
+
+			for (var i = 0; i < keys.length; i++) {
+				total += $scope.prices[keys[i]] * ($scope.quantity[keys[i]] || 0);
+			}
+			return total;
+		};
+
+		$scope.playersCount = function() {
+			return Object.values($scope.quantity).reduce((t, v) => t + v, 0);
+		};
+
+		$scope.getPrices = function(){
+			$scope.isGettingPrices = true;
+			$scope.getPricesText = "Loading...";
+
+			fetch('https://cors-anywhere.herokuapp.com/https://www.futbin.com/stc/cheapest')
+			.then((response) => {
+				return response.text().then(function(text) {
+					parser = new DOMParser();
+					doc = parser.parseFromString(text, "text/html");          
+					var container = doc.querySelectorAll(".top-stc-players-box");
+					var prices = {};
+
+					for (var i = 0; i < container.length; i++) {
+						var rating = container[i].querySelector("span span").innerText;
+						var minPrice = container[i].querySelector(".price-holder-row span").innerText;
+						var multiplier = minPrice.includes('K') ? 1000 : minPrice.includes('M') ? 1000000 : 1;
+						prices[parseInt(rating)] = parseFloat(minPrice.replace('K', '').replace('M', '')) * multiplier;
+					}
+					$scope.prices = prices;
+					$scope.isGettingPrices = false;
+					$scope.getPricesText = "Get prices";
+					$scope.$apply();
+				})
+			});
+		}
+	});
+</script>
+</body>
+</html>
