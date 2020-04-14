@@ -163,7 +163,8 @@
 
             for (var i = 0; i < container.length; i++) {
               var rating = container[i].querySelector("span span").innerText;
-              var minPrice = container[i].querySelector(".price-holder-row span").innerText;
+              var minPrices = container[i].querySelectorAll(".price-holder-row span");
+              var minPrice = minPrices[minPrices.length > 5 ? 5 : 0].innerText;
               var multiplier = minPrice.includes('K') ? 1000 : minPrice.includes('M') ? 1000000 : 1;
               prices[parseInt(rating)] = parseFloat(minPrice.replace('K', '').replace('M', '')) * multiplier;
             }
