@@ -113,7 +113,7 @@
             var multipliedValues = _.map(newVal.split(/[,]+/), function(el){
               var elements = el.split(/[ x\*]+/i);
               if (elements.length < 2 || !elements[1]) return el;
-              elements = elements.map(e => parseInt(e)).sort();
+              elements = elements.map(e => parseInt(e)).sort((a,b) => a-b);
 
               var count = elements[0];
               var rating = elements[1];
