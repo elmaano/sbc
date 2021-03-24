@@ -29,7 +29,7 @@
               <div class="card-block">
                 <h2>Step 1:</h2>
                 <small>Enter the ratings of the cards you want to use for this SBC, separated by a comma. (Minimum 1 required)</small>
-                <input type="text" class="form-control" ng-model="squadText" placeholder="81,82,85" required>
+                <input type="text" class="form-control" ng-model="squadText" placeholder="81,81,82,85 or 81x2,82,85" required>
               </div>
             </div>
           </div>
@@ -110,7 +110,18 @@
 
         $scope.$watch('squadText', function(newVal, oldVal){
           if(newVal){
-            $scope.squad = _.map(newVal.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
+            var multipliedValues = _.map(newVal.split(/[,]+/), function(el){
+              var elements = el.split(/[ x\*]+/i);
+              if (elements.length < 2 || !elements[1]) return el;
+              elements = elements.map(e => parseInt(e)).sort();
+
+              var count = elements[0];
+              var rating = elements[1];
+
+              return (rating+",").repeat(count);
+            });
+            multipliedValues = multipliedValues.join()
+            $scope.squad = _.map(multipliedValues.replace(/[^\d]$/,'').split(/[ ,]+/), function(el){
               return parseInt(el) || 0;
             });
           }
