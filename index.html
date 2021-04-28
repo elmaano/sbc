@@ -111,7 +111,7 @@
         $scope.$watch('squadText', function(newVal, oldVal){
           if(newVal){
             var multipliedValues = _.map(newVal.split(/[,]+/), function(el){
-              var elements = el.split(/[ x\*]+/i);
+              var elements = el.trim().split(/[ x\*]+/i);
               if (elements.length < 2 || !elements[1]) return el;
               elements = elements.map(e => parseInt(e)).sort((a,b) => a-b);
 
